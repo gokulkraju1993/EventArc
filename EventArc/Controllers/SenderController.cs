@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -13,10 +14,10 @@ namespace EventArc.Controllers
     [ApiController]
     public class SenderController : ControllerBase
     {
-        public void Send() {
+        public ActionResult<string> Send() {
 
             List<string> message = new List<string>();
-            var factory = new ConnectionFactory() { HostName = "localhost" };
+            var factory = new ConnectionFactory() { HostName = "10.0.75.1", Port = 5672, UserName = "admin", Password = "admin", VirtualHost = "/" };
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
@@ -38,6 +39,8 @@ namespace EventArc.Controllers
                     
                 }
             }
+
+            return JsonConvert.SerializeObject(message);
         }
     }
 }
