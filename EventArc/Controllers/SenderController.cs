@@ -81,32 +81,12 @@ namespace EventArc.Controllers
 
         public string CallSender(string message)
         {
-            string response = "";
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URL);
-            request.Method = "POST";
-            request.ContentType = "application/json";
-            request.ContentLength = message.Length;
-            var DATA = @"{""message"":""sdfs""}";
-            using (Stream webStream = request.GetRequestStream())
-            using (StreamWriter requestWriter = new StreamWriter(webStream, System.Text.Encoding.ASCII))
-            {
-                requestWriter.Write(DATA);
-            }
-
-            WebResponse webResponse = request.GetResponse();
-            using (Stream webStream = webResponse.GetResponseStream() ?? Stream.Null)
-            using (StreamReader responseReader = new StreamReader(webStream))
-            {
-                response = responseReader.ReadToEnd();
-                Console.Out.WriteLine(response);
-            }
-
             using (RedisClient redisClient = new RedisClient("10.0.75.1", 6379))
 
             {
 
                 var isSuccess = redisClient.Set("message", message);
-                return response;
+                return message;
             }
         }
     }
