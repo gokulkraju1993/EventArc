@@ -9,6 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using ServiceStack.Redis.Generic;
+using ServiceStack.Redis.Pipeline;
+using ServiceStack.Text;
+using ServiceStack.Caching;
+using ServiceStack.Redis;
 
 namespace EventArc.Controllers
 {    
@@ -68,7 +73,7 @@ namespace EventArc.Controllers
 
                     var body = ea.Body;
                     message.Add(Encoding.UTF8.GetString(body));
-                    return CallSender(Encoding.UTF8.GetString(body));
+                    CallSender(JsonConvert.SerializeObject(message));
                 }
             }
         }
@@ -94,7 +99,13 @@ namespace EventArc.Controllers
                 response = responseReader.ReadToEnd();
                 Console.Out.WriteLine(response);
             }
-            return response;
-        }
+
+            using (RedisClient redisClient = new RedisClient("10.0.75.1", 6379))
+
+            {
+
+                var isSuccess = redisClient.Set("message", message);
+                return response;
+            }
     }
 }
