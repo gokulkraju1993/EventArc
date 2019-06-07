@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -9,11 +11,13 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
 namespace EventArc.Controllers
-{
+{    
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class SenderController : ControllerBase
     {
+        private const string URL = "https://localhost86/CallReceiver";
+
         public ActionResult<string> Send() {
 
             List<string> message = new List<string>();
@@ -39,6 +43,58 @@ namespace EventArc.Controllers
                     return JsonConvert.SerializeObject(message);
                 }
             }
+        }
+
+        public ActionResult<string> Send1()
+        {
+
+            List<string> message = new List<string>();
+            var factory = new ConnectionFactory() { HostName = "rabbit", UserName = "admin", Password = "admin", VirtualHost = "/" };
+            using (var connection = factory.CreateConnection())
+            using (var channel = connection.CreateModel())
+            {
+                channel.QueueDeclare(queue: "test",
+                                     durable: false,
+                                     exclusive: false,
+                                     autoDelete: false,
+                                     arguments: null);
+
+                var consumer = new QueueingBasicConsumer(channel);
+                channel.BasicConsume("test", true, consumer);
+
+                while (true)
+                {
+                    var ea = (BasicDeliverEventArgs)consumer.Queue.Dequeue();
+
+                    var body = ea.Body;
+                    message.Add(Encoding.UTF8.GetString(body));
+                    return CallSender(Encoding.UTF8.GetString(body));
+                }
+            }
+        }
+
+        public string CallSender(string message)
+        {
+            string response = "";
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URL);
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            request.ContentLength = message.Length;
+            var  DATA = @"{""message"":""sdfs""}";
+            using (Stream webStream = request.GetRequestStream())
+            using (StreamWriter requestWriter = new StreamWriter(webStream, System.Text.Encoding.ASCII))
+            {
+                requestWriter.Write(DATA);
+            }
+
+            WebResponse webResponse = request.GetResponse();
+            using (Stream webStream = webResponse.GetResponseStream() ?? Stream.Null)
+            using (StreamReader responseReader = new StreamReader(webStream))
+            {
+                response = responseReader.ReadToEnd();
+                Console.Out.WriteLine(response);
+            }
+            return response;
         }
     }
 }
