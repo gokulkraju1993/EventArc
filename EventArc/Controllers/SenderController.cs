@@ -47,6 +47,7 @@ namespace EventArc.Controllers
                     var body = ea.Body;
                     message.Add(Encoding.UTF8.GetString(body));
                     CallSender(JsonConvert.SerializeObject(message));
+                    return JsonConvert.SerializeObject(message);
                 }
             }
         }
