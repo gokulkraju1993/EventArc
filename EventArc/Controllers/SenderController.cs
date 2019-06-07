@@ -46,7 +46,7 @@ namespace EventArc.Controllers
 
                     var body = ea.Body;
                     message.Add(Encoding.UTF8.GetString(body));
-                    return JsonConvert.SerializeObject(message);
+                    CallSender(JsonConvert.SerializeObject(message));
                 }
             }
         }
@@ -75,18 +75,16 @@ namespace EventArc.Controllers
                     var body = ea.Body;
                     message.Add(Encoding.UTF8.GetString(body));
                     CallSender(JsonConvert.SerializeObject(message));
+                    return Encoding.UTF8.GetString(body);
                 }
             }
         }
 
-        public string CallSender(string message)
+        public void CallSender(string message)
         {
             using (RedisClient redisClient = new RedisClient("10.0.75.1", 6379))
-
             {
-
                 var isSuccess = redisClient.Set("message", message);
-                return message;
             }
         }
     }

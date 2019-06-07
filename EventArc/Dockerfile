@@ -4,8 +4,8 @@ EXPOSE 80
 
 FROM microsoft/dotnet:2.1-sdk AS build
 WORKDIR /src
-COPY ["EventArc/EventArc.csproj", "EventArc/"]
-RUN dotnet restore "EventArc/EventArc.csproj"
+COPY ["EventArc.csproj", "EventArc"]
+RUN dotnet restore "EventArc.csproj"
 COPY . .
 WORKDIR "/src/EventArc"
 RUN dotnet build "EventArc.csproj" -c Release -o /app
