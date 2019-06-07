@@ -16,14 +16,15 @@ using ServiceStack.Caching;
 using ServiceStack.Redis;
 
 namespace EventArc.Controllers
-{    
+{
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class SenderController : ControllerBase
     {
         private const string URL = "https://localhost86/CallReceiver";
 
-        public ActionResult<string> Send() {
+        public ActionResult<string> Send()
+        {
 
             List<string> message = new List<string>();
             var factory = new ConnectionFactory() { HostName = "10.0.75.1", Port = 5672, UserName = "admin", Password = "admin", VirtualHost = "/" };
@@ -33,7 +34,7 @@ namespace EventArc.Controllers
                 channel.QueueDeclare(queue: "test",
                                      durable: false,
                                      exclusive: false,
-                                     autoDelete: false,                                     
+                                     autoDelete: false,
                                      arguments: null);
 
                 var consumer = new QueueingBasicConsumer(channel);
@@ -85,7 +86,7 @@ namespace EventArc.Controllers
             request.Method = "POST";
             request.ContentType = "application/json";
             request.ContentLength = message.Length;
-            var  DATA = @"{""message"":""sdfs""}";
+            var DATA = @"{""message"":""sdfs""}";
             using (Stream webStream = request.GetRequestStream())
             using (StreamWriter requestWriter = new StreamWriter(webStream, System.Text.Encoding.ASCII))
             {
@@ -107,5 +108,6 @@ namespace EventArc.Controllers
                 var isSuccess = redisClient.Set("message", message);
                 return response;
             }
+        }
     }
 }
